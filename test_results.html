@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>什么值得买商品提取测试集 商品名称提取功能测试报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f2f5f9;
+            color: #172033;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 28px 22px;
+        }
+        .report-container { max-width: 1400px; margin: 0 auto; }
+        .summary-banner {
+            background: linear-gradient(135deg, #19324d 0%, #101827 100%);
+            color: #fff;
+            border-radius: 20px;
+            padding: 22px 28px;
+            margin-bottom: 22px;
+        }
+        .summary-banner h1 { font-size: 1.05rem; font-weight: 650; margin-bottom: 14px; }
+        .flex-stats { display: flex; flex-wrap: wrap; gap: 28px; }
+        .big-number { display: inline-block; font-size: 2.2rem; font-weight: 750; margin-bottom: 4px; }
+        .summary-note { margin-top: 14px; font-size: 0.78rem; opacity: 0.82; line-height: 1.7; }
+        .card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.06);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .article-head {
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .article-title {
+            max-width: 820px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 1rem;
+            line-height: 1.45;
+            font-weight: 650;
+        }
+        .icon-em { font-size: 0.72rem; letter-spacing: 0; border-radius: 999px; background: #e9eef6; color: #1f3654; padding: 3px 8px; }
+        .badge-success, .badge-warning, .badge-error, .source-link {
+            border-radius: 999px;
+            padding: 3px 11px;
+            font-size: 0.68rem;
+            font-weight: 650;
+        }
+        .badge-success { background: #def7e8; color: #20733e; }
+        .badge-warning { background: #fff0d9; color: #9a5700; }
+        .badge-error { background: #ffe1de; color: #a5251c; }
+        .source-link { background: #e9f4ff; color: #155799; text-decoration: none; }
+        .source-disabled { background: #eef2f7; color: #64748b; }
+        .metric-pills { display: flex; flex-wrap: wrap; gap: 9px; font-size: 0.74rem; }
+        .pill { background: #eef2f7; border-radius: 999px; padding: 5px 11px; font-weight: 600; }
+        .pill-prec { background: #e5f6ea; color: #27653a; }
+        .pill-recall { background: #e8efff; color: #244b9b; }
+        .pill-meta { background: #fff3c7; color: #7b5413; }
+        .article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 22px 0;
+            color: #627187;
+            font-size: 0.74rem;
+        }
+        .table-wrapper { overflow-x: auto; padding: 12px 18px 18px; }
+        .compare-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 0.8rem; }
+        .compare-table th {
+            text-align: left;
+            padding: 12px;
+            background: #f8fafc;
+            color: #243247;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.75rem;
+        }
+        .compare-table td {
+            padding: 12px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+        .extract-cell { background: #fffceb; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.75rem; }
+        .expect-cell { background: #eef8ff; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.75rem; }
+        .align-center { text-align: center; }
+        .match-tag {
+            display: inline-block;
+            background: #dcfce7;
+            color: #16803b;
+            border-radius: 999px;
+            padding: 3px 11px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .miss-tag { background: #ffe4e2; color: #b91c1c; }
+        .row-miss { background: #fff7f6; }
+        .footnote-box, .success-note {
+            margin: 0 18px 18px;
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-size: 0.74rem;
+            line-height: 1.6;
+        }
+        .footnote-box { background: #fffbea; color: #73531b; border-left: 3px solid #f2c94c; }
+        .success-note { background: #eaf9ef; color: #28663c; }
+        @media (max-width: 720px) {
+            body { padding: 18px 12px; }
+            .summary-banner { border-radius: 16px; padding: 18px; }
+            .big-number { font-size: 1.7rem; }
+            .article-head { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="report-container">
+        <section class="summary-banner">
+            <h1>什么值得买商品提取测试集 商品名称提取功能测试报告 · All-in-One ProductDiscovery</h1>
+            <div class="flex-stats">
+                <div><span class="big-number">96.67%</span><br>平均精确率</div>
+                <div><span class="big-number">93.57%</span><br>平均召回率</div>
+                <div><span class="big-number">94.17%</span><br>平均 F1</div>
+                <div><span class="big-number">10</span><br>总测试文章数</div>
+                <div><span class="big-number">8/10</span><br>完美匹配文章</div>
+            </div>
+            <div class="summary-note">
+                数据来源：ProductDiscovery all-in-one mode 测试结果。详细 JSON：workspace/reports/product_extraction/zhidemai/test_results.json
+            </div>
+        </section>
+        
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>今年会是史上最欢乐的购机季</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/a262xme7/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 16/16</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_001</span><span>文章长度：8,868 字符</span><span>标准答案：16 个</span><span>实际提取：16 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">红米K80</td>
+                <td class="expect-cell">红米K80</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">华为畅享 90 Pro Max</td>
+                <td class="expect-cell">华为畅享 90 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">一加 Ace 5</td>
+                <td class="expect-cell">一加 Ace 5</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小米15</td>
+                <td class="expect-cell">小米15</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">REDMI K90 Pro Max</td>
+                <td class="expect-cell">REDMI K90 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">荣耀500pro</td>
+                <td class="expect-cell">荣耀500pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">华为 Mate 80</td>
+                <td class="expect-cell">华为 Mate 80</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">OPPO Find X9</td>
+                <td class="expect-cell">OPPO Find X9</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小米 17 Pro</td>
+                <td class="expect-cell">小米 17 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">vivo X300</td>
+                <td class="expect-cell">vivo X300</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Apple 苹果 iPhone 17</td>
+                <td class="expect-cell">苹果 iPhone 17</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Apple 苹果 iPhone 17 Pro</td>
+                <td class="expect-cell">苹果 iPhone 17 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Apple 苹果 iPhone 17 Pro Max</td>
+                <td class="expect-cell">苹果 iPhone 17 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">HUAWEI Mate 80 PRO</td>
+                <td class="expect-cell">HUAWEI Mate 80 PRO</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">HUAWEI Mate 80 Pro Max</td>
+                <td class="expect-cell">HUAWEI Mate 80 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">HUAWEI Mate X7</td>
+                <td class="expect-cell">HUAWEI Mate X7</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>100多淘到戴尔的扩展坞，带USB雷电扩展双4K高清，这价格亏不亏？</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/az8w2d3r/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 1/1</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_002</span><span>文章长度：1,290 字符</span><span>标准答案：1 个</span><span>实际提取：1 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">戴尔D6000S扩展坞</td>
+                <td class="expect-cell">戴尔D6000S扩展坞</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>2026年618海尔 vs 小天鹅滚筒洗衣机怎么选？看完这篇省下几千块</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/al329e2g/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 9/9</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_003</span><span>文章长度：11,438 字符</span><span>标准答案：9 个</span><span>实际提取：9 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">小天鹅 TG100APUREPRO</td>
+                <td class="expect-cell">小天鹅 TG100APUREPRO</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">海尔 EG100MATE29S</td>
+                <td class="expect-cell">海尔 EG100MATE29S</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小天鹅水魔方 TG10V628PLUS</td>
+                <td class="expect-cell">小天鹅 TG10V628PLUS</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">海尔云溪 3.0 精英版 XQG100-BLDE583WU1</td>
+                <td class="expect-cell">海尔 XQG100-BLDE583WU1</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小天鹅小乌梅 3.0 标准版 TG10VE40</td>
+                <td class="expect-cell">小天鹅 TG10VE40</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">海尔云溪 4.0 标准版 XQG100-BLEG583HU1</td>
+                <td class="expect-cell">海尔 XQG100-BLEG583HU1</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小天鹅小乌梅 5.0 TG10EK60</td>
+                <td class="expect-cell">小天鹅 TG10EK60</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小天鹅小蓝鲸 3.0 TG12VE80PROMAX</td>
+                <td class="expect-cell">小天鹅 TG12VE80PROMAX</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">海尔麦浪 XQG100-BSNEG87AU1</td>
+                <td class="expect-cell">海尔 XQG100-BSNEG87AU1</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>机皇下放？挤爆牙膏？关于TCL Q10M的四个问题与一个肯定</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/ae605q7m/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 4/4</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_004</span><span>文章长度：5,564 字符</span><span>标准答案：4 个</span><span>实际提取：4 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">TCL Q10M</td>
+                <td class="expect-cell">TCL Q10M</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">TCL Q10M Pro</td>
+                <td class="expect-cell">TCL Q10M Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">TCL X11L</td>
+                <td class="expect-cell">TCL X11L</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">TCL Q10L</td>
+                <td class="expect-cell">TCL Q10L</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>手机没必要买太贵！可以“闭眼买”的3款手机，16+512GB低价高配</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/ae6g0k3q/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 3/3</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_005</span><span>文章长度：1,761 字符</span><span>标准答案：3 个</span><span>实际提取：3 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">红米K80至尊版</td>
+                <td class="expect-cell">红米K80至尊版</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小米15</td>
+                <td class="expect-cell">小米15</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">一加13T</td>
+                <td class="expect-cell">一加13T</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>闲鱼捡漏实录：400 元入手酷比魔方iplay50 mini</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/az8wqn65/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 1/1</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_006</span><span>文章长度：3,366 字符</span><span>标准答案：1 个</span><span>实际提取：1 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">酷比魔方iplay50 mini</td>
+                <td class="expect-cell">酷比魔方 iplay50 mini</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">WARN</span>
+                <span>小米目前“最值得捡漏”的一款旗舰手机，16G+512G直降1000元</span>
+                <span class="badge-warning">存在差异</span>
+                <a class="source-link" href="https://post.smzdm.com/p/a6zmz4gz/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 66.67%</span>
+                <span class="pill pill-recall">召回 85.71%</span>
+                <span class="pill">F1 0.7500</span>
+                <span class="pill pill-meta">命中 6/7</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_007</span><span>文章长度：1,814 字符</span><span>标准答案：7 个</span><span>实际提取：9 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class=" row-miss">
+                <td class="extract-cell">红米Turbo5系列</td>
+                <td class="expect-cell">-</td>
+                <td class="align-center">
+                    <span class="match-tag miss-tag">未命中</span>
+                </td>
+            </tr>
+            
+            <tr class=" row-miss">
+                <td class="extract-cell">红米K90系列</td>
+                <td class="expect-cell">-</td>
+                <td class="align-center">
+                    <span class="match-tag miss-tag">未命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">红米K90 Pro Max</td>
+                <td class="expect-cell">红米K90 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">一加15</td>
+                <td class="expect-cell">一加15</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">iQOO 15</td>
+                <td class="expect-cell">iQOO 15</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">红米K80 Pro</td>
+                <td class="expect-cell">红米K80 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小米17 Pro Max</td>
+                <td class="expect-cell">小米17 Pro Max</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">小米17</td>
+                <td class="expect-cell">小米17</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class=" row-miss">
+                <td class="extract-cell">小米15系列</td>
+                <td class="expect-cell">-</td>
+                <td class="align-center">
+                    <span class="match-tag miss-tag">未命中</span>
+                </td>
+            </tr>
+            
+            <tr class="row-miss">
+                <td class="extract-cell">-</td>
+                <td class="expect-cell">小米17 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag miss-tag">漏提</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="footnote-box">漏提 1 个，未命中提取项 3 个。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>小米平板系列选购指南✨一篇看懂不踩坑</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/talk/p/al35nz2g/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 4/4</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_008</span><span>文章长度：1,616 字符</span><span>标准答案：4 个</span><span>实际提取：4 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">REDMI Pad 2</td>
+                <td class="expect-cell">REDMI Pad 2</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Redmi Pad SE</td>
+                <td class="expect-cell">Redmi Pad SE</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Xiaomi Pad 7 Pro</td>
+                <td class="expect-cell">Xiaomi Pad 7 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="">
+                <td class="extract-cell">Xiaomi Pad 8 Pro</td>
+                <td class="expect-cell">Xiaomi Pad 8 Pro</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">OK</span>
+                <span>兄弟 PT-P300BTz 评测：一台标签打印机，治好全家的收纳混乱</span>
+                <span class="badge-success">完美匹配</span>
+                <a class="source-link" href="https://post.smzdm.com/p/al3e347e/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 100.00%</span>
+                <span class="pill">F1 1.0000</span>
+                <span class="pill pill-meta">命中 1/1</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_009</span><span>文章长度：3,287 字符</span><span>标准答案：1 个</span><span>实际提取：1 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">兄弟（brother）PT-P300BTz</td>
+                <td class="expect-cell">兄弟 PT-P300BTz</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="success-note">所有标准答案均命中。</div>
+    </section>
+    
+
+    <section class="card article-item">
+        <div class="article-head">
+            <div class="article-title">
+                <span class="icon-em">WARN</span>
+                <span>自适应智能控温，核心直降38°C——雷蛇(Razer)笔记本散热底座</span>
+                <span class="badge-warning">存在差异</span>
+                <a class="source-link" href="https://post.smzdm.com/p/ad7xr4kd/" target="_blank" rel="noopener noreferrer">查看原文</a>
+            </div>
+            <div class="metric-pills">
+                <span class="pill pill-prec">精确 100.00%</span>
+                <span class="pill pill-recall">召回 50.00%</span>
+                <span class="pill">F1 0.6667</span>
+                <span class="pill pill-meta">命中 1/2</span>
+            </div>
+        </div>
+        <div class="article-meta"><span>文章ID：zhidemai_010</span><span>文章长度：7,671 字符</span><span>标准答案：2 个</span><span>实际提取：1 个</span></div>
+        <div class="table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>ProductDiscovery 提取结果</th>
+                        <th>标准答案 / 匹配目标</th>
+                        <th>对比结论</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr class="">
+                <td class="extract-cell">雷蛇(Razer)笔记本散热底座</td>
+                <td class="expect-cell">雷蛇(Razer)笔记本散热底座</td>
+                <td class="align-center">
+                    <span class="match-tag">命中</span>
+                </td>
+            </tr>
+            
+            <tr class="row-miss">
+                <td class="extract-cell">-</td>
+                <td class="expect-cell">华硕天选5</td>
+                <td class="align-center">
+                    <span class="match-tag miss-tag">漏提</span>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+        <div class="footnote-box">漏提 1 个，未命中提取项 0 个。</div>
+    </section>
+    
+    </main>
+</body>
+</html>
