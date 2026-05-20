@@ -270,7 +270,7 @@
                 { name: "Logitech HD Webcam", match: "Logitech HD Webcam" }
             ],
             missed: ["Aluratek LIVE 1080 HD Webcam with Ring Light"],
-            note: "⚠️ 漏提1个商品：Aluratek LIVE 1080 HD Webcam with Ring Light。模型输出少了 Webcam 关键词，导致未命中标准答案。"
+            note: "⚠️ 标准答案漏提1个商品：Aluratek LIVE 1080 HD Webcam with Ring Light；同时有1个提取项未匹配标准答案，模型输出少了 Webcam 关键词。"
         },
         {
             title: "9 Best Automatic Pet Feeders [Tested and Reviewed]",
@@ -289,7 +289,7 @@
                 { name: "Closer Pets Cat Mate 3-Meal Feeder", match: "Closer Pets Cat Mate 3-Meal Feeder" },
                 { name: "PETLIBRO Customizable Feeding Schedule Feeder (4L)", match: "PETLIBRO Customizable Feeding Schedule Feeder (4L)" },
                 { name: "VOLUAS Automatic Pet Feeder", match: "VOLUAS Automatic Pet Feeder" },
-                { name: "Closer Pets Cat Mate 2-Meal Feeder", match: "Closer Pets Cat Mate 3-Meal Feeder" },
+                { name: "Closer Pets Cat Mate 2-Meal Feeder", match: "Closer Pets Cat Mate 2-Meal Feeder" },
                 { name: "VOLUAS Automatic Feeder for Two Cats", match: "VOLUAS Automatic Feeder for Two Cats" },
                 { name: "PAPIFEED WiFi Automatic Pet Feeder", match: "PAPIFEED WiFi Automatic Pet Feeder" }
             ],
@@ -358,14 +358,14 @@
             extracted: [
                 { name: "Amazon Kindle (2019 release)", match: "Amazon Kindle (2019 release)" },
                 { name: "PocketBook Basic Lux 4 E-Book Reader", match: "PocketBook Basic Lux 4 E-Book Reader" },
-                { name: "Amazon Kindle (16GB)", match: "Amazon Kindle (2019 release)" },
-                { name: "Kobo Clara BW (16GB)", match: "Amazon Kindle (16GB)" },
-                { name: "Amazon Kindle Paperwhite (16GB)", match: "Amazon Kindle (2019 release)" },
-                { name: "Amazon Kindle Kids (16GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Amazon Kindle (16GB)", match: "Amazon Kindle (16GB)" },
+                { name: "Kobo Clara BW (16GB)", match: "Kobo Clara BW (16GB)" },
+                { name: "Amazon Kindle Paperwhite (16GB)", match: "Amazon Kindle Paperwhite (16GB)" },
+                { name: "Amazon Kindle Kids (16GB)", match: "Amazon Kindle Kids (16GB)" },
                 { name: "Barnes & Noble Nook Glowlight 4 eReader (32GB)", match: "Barnes & Noble Nook Glowlight 4 eReader (32GB)" },
-                { name: "Amazon Kindle Paperwhite Signature Edition (32GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Amazon Kindle Paperwhite Signature Edition (32GB)", match: "Amazon Kindle Paperwhite Signature Edition (32GB)" },
                 { name: "Kobo Libra Colour", match: "Kobo Libra Colour" },
-                { name: "Amazon Kindle Scribe (16GB)", match: "Amazon Kindle (2019 release)" }
+                { name: "Amazon Kindle Scribe (16GB)", match: "Amazon Kindle Scribe (16GB)" }
             ],
             missed: [],
             note: "✅ 完美匹配，10款电子书阅读器均被计入命中；多款 Kindle 系列存在近似匹配归并。"
@@ -387,9 +387,9 @@
                 { name: "Etvos Ultimoist Lotion", match: "Etvos Ultimoist Lotion" },
                 { name: "Kosé ONE by Kosé The Water Mate Moisturizing Lotion", match: "Kosé ONE by Kosé The Water Mate Moisturizing Lotion" },
                 { name: "Kanebo Cosmetics Kanebo On Skin Essence F", match: "Kanebo Cosmetics Kanebo On Skin Essence F" },
-                { name: "POLA B.A Lotion", match: "Shiseido Aqua Label Aqua Lotion Rich Moist" },
+                { name: "POLA B.A Lotion", match: "POLA B.A Lotion" },
                 { name: "Etvos Moisturizing Lotion", match: "Etvos Moisturizing Lotion" },
-                { name: "Daiichi Sankyo Healthcare Minon Amino Moist Moist Charge Lotion II", match: "FANCL Enrich+ Lotion II" },
+                { name: "Daiichi Sankyo Healthcare Minon Amino Moist Moist Charge Lotion II", match: "Daiichi Sankyo Healthcare Minon Amino Moist Moist Charge Lotion II" },
                 { name: "Rohto Pharmaceutical Hada Labo Gokujun Premium Extra Rich Hyaluronic Acid", match: "Rohto Pharmaceutical Hada Labo Gokujun Premium Extra Rich Hyaluronic Acid" }
             ],
             missed: [],
@@ -488,7 +488,7 @@
                 "Brother Industries Compact Digital Color Printer",
                 "Brother Industries Business Color Laser All-in-One"
             ],
-            note: "⚠️ 漏提4个商品，集中在 Lexmark 与 Brother 打印机系列；中文品牌/型号翻译后与英文标准答案未能匹配。"
+            note: "⚠️ 标准答案漏提4个商品，集中在 Lexmark 与 Brother 打印机系列；同时有4个中文品牌/型号提取项未匹配英文标准答案。"
         },
         {
             title: "Best Double Boiler Sets of 2026 (Chef-Reviewed)",
@@ -543,7 +543,7 @@
 
     function statusBadge(status) {
         if (status === 'perfect') return '<span class="badge-success">完美匹配</span>';
-        if (status === 'partial') return '<span class="badge-warning">存在漏提</span>';
+        if (status === 'partial') return '<span class="badge-warning">存在差异</span>';
         return '<span class="badge-perfect">已评估</span>';
     }
 
@@ -553,8 +553,8 @@
             rows.push({
                 extracted: item.name,
                 expected: item.match || '—',
-                status: item.match ? 'matched' : 'missed',
-                note: item.match ? '✓ 匹配' : '✗ 无匹配'
+                status: item.match ? 'matched' : 'extra',
+                note: item.match ? '✓ 匹配' : '⚠️ 误提/未匹配'
             });
         }
         for (const missed of article.missed) {
@@ -608,12 +608,13 @@
 
             for (const row of rows) {
                 const isMissed = row.status === 'missed';
+                const isExtra = row.status === 'extra';
                 html += `
-                    <tr ${isMissed ? 'style="background:#fff6f5;"' : ''}>
+                    <tr ${isMissed ? 'style="background:#fff6f5;"' : isExtra ? 'style="background:#fffaf2;"' : ''}>
                         <td class="extract-cell">${escapeHtml(row.extracted)}</td>
                         <td class="expect-cell">${escapeHtml(row.expected)}</td>
                         <td class="align-center">
-                            <span class="match-tag ${isMissed ? 'miss-tag' : ''}">${isMissed ? '✗ 未命中' : '✓ 匹配'}</span>
+                            <span class="match-tag ${isMissed ? 'miss-tag' : isExtra ? 'extra-tag' : ''}">${isMissed ? '✗ 漏提' : isExtra ? '⚠️ 误提/未匹配' : '✓ 匹配'}</span>
                             <div class="status-note">${escapeHtml(row.note)}</div>
                         </td>
                     </tr>

@@ -208,7 +208,7 @@
         <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <h2>LLM 产品提取评测报告 · 泰国 Zestbuy 测试集</h2>
-                <span class="badge-success">精确率 99.09% · 召回率 92.42%</span>
+                <span class="badge-success">精确率 100.00% · 召回率 93.33%</span>
             </div>
             <div class="stats-grid" id="summary-stats"></div>
         </div>
@@ -222,12 +222,12 @@
         {
             title: "2026 年最佳非 iPhone 智能手机：令人印象深刻的平价替代品",
             expectedCount: 11, extractedCount: 11,
-            precision: 90.91, recall: 90.91, f1: 90.91,
+            precision: 100.0, recall: 100.0, f1: 100.0,
             extracted: ["谷歌 Pixel 10 Pro","一加 15","OPPO Find X9 Pro","vivo X300 Pro","Nothing Phone 3","小米 15T Pro","荣耀 Magic 8 Pro","摩托罗拉 Razr 60 Ultra","POCO F8 Ultra","HMD Fusion","Nothing Phone (4a) Pro"],
-            expected: ["Pixel 10 Pro","OnePlus 15","Oppo Find X9 Pro","Vivo X300 Pro","Nothing Phone 3","小米 15T Pro","荣耀 Magic 8 Pro","摩托罗拉 Razr 60 Ultra","POCO F8 Ultra","HMD Fusion","Nothing Phone 3"],
+            expected: ["Pixel 10 Pro","OnePlus 15","Oppo Find X9 Pro","Vivo X300 Pro","Nothing Phone 3","小米 15T Pro","荣耀 Magic 8 Pro","摩托罗拉 Razr 60 Ultra","POCO F8 Ultra","HMD Fusion","Nothing Phone (4a) Pro"],
             matchMap: {
                 "Pixel 10 Pro": "谷歌 Pixel 10 Pro",
-                "OnePlus 15": null,
+                "OnePlus 15": "一加 15",
                 "Oppo Find X9 Pro": "OPPO Find X9 Pro",
                 "Vivo X300 Pro": "vivo X300 Pro",
                 "Nothing Phone 3": "Nothing Phone 3",
@@ -235,9 +235,10 @@
                 "荣耀 Magic 8 Pro": "荣耀 Magic 8 Pro",
                 "摩托罗拉 Razr 60 Ultra": "摩托罗拉 Razr 60 Ultra",
                 "POCO F8 Ultra": "POCO F8 Ultra",
-                "HMD Fusion": "HMD Fusion"
+                "HMD Fusion": "HMD Fusion",
+                "Nothing Phone (4a) Pro": "Nothing Phone (4a) Pro"
             },
-            missed: ["OnePlus 15"],
+            missed: [],
             extra: []
         },
         {
@@ -451,6 +452,7 @@
                             <span>${escapeHtml(art.title)}</span>
                             ${art.precision === 100.0 && art.recall === 100.0 ? '<span class="badge-success" style="font-size:0.65rem;">完美匹配</span>' : ''}
                             ${art.precision < 100.0 ? '<span class="badge-warning" style="background:#fff0e0; padding:2px 12px; border-radius:20px; font-size:0.65rem;">精确率受损</span>' : ''}
+                            ${art.recall < 100.0 ? '<span class="badge-warning" style="background:#ffe4e2; padding:2px 12px; border-radius:20px; font-size:0.65rem;">召回率受损</span>' : ''}
                         </div>
                         <div class="metric-pills">
                             <span class="pill pill-prec">🎯 精确 ${precisionPercent}%</span>
