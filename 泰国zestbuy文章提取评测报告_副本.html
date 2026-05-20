@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM产品提取评测报告 | 知买测试详细对比</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f2f8;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 30px 24px;
+            color: #1e293b;
+        }
+        .report-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 20px 28px 12px 28px;
+            border-bottom: 1px solid #eef2f8;
+        }
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+        }
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 16px;
+            padding-bottom: 8px;
+        }
+        .stat-block {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 16px 24px;
+            flex: 1 0 160px;
+            border: 1px solid #ecf3fa;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #475569;
+            letter-spacing: 0.5px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+            margin-top: 6px;
+        }
+        .stat-detail {
+            font-size: 0.7rem;
+            color: #3b7cbf;
+            margin-top: 8px;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 6px;
+        }
+        .badge-success {
+            background: #dff9e6;
+            color: #1f7840;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-warning {
+            background: #fff1e6;
+            color: #b85c00;
+        }
+        .article-item {
+            border-bottom: 1px solid #edf2f7;
+            background: white;
+        }
+        .article-item:last-child {
+            border-bottom: none;
+        }
+        .article-head {
+            padding: 18px 24px;
+            background: #ffffff;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0f4fa;
+        }
+        .article-title {
+            font-weight: 650;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .metric-pills {
+            display: flex;
+            gap: 10px;
+            font-size: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .pill {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 32px;
+            font-weight: 500;
+        }
+        .pill-prec {
+            background: #e6f7ec;
+            color: #2b6e3c;
+        }
+        .pill-recall {
+            background: #eef2ff;
+            color: #1e40af;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 12px 20px 20px 20px;
+            background: #ffffff;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 700px;
+        }
+        .compare-table th {
+            text-align: left;
+            padding: 12px 12px;
+            background-color: #f8fafd;
+            font-weight: 600;
+            color: #1e2a44;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.75rem;
+        }
+        .compare-table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #f0f4fc;
+            vertical-align: middle;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            word-break: break-word;
+        }
+        .extract-cell {
+            background-color: #fefce8;
+        }
+        .expect-cell {
+            background-color: #f0f9ff;
+        }
+        .match-tag {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .miss-tag {
+            background: #ffe4e2;
+            color: #b91c1c;
+        }
+        .extra-tag {
+            background: #fff0e0;
+            color: #b45309;
+        }
+        .status-note {
+            font-size: 0.6rem;
+            color: #5b6e8c;
+            margin-top: 5px;
+        }
+        .footnote-box {
+            background: #fefce8;
+            margin: 0 20px 18px 20px;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #7c5c2c;
+            border-left: 3px solid #facc15;
+        }
+        .icon-em {
+            font-size: 1.1rem;
+        }
+        .align-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <h2>📊 LLM 产品提取评测报告 · 知买测试集</h2>
+                <span class="badge-success">精确率 99.09% · 召回率 92.42%</span>
+            </div>
+            <div class="stats-grid" id="summary-stats"></div>
+        </div>
+    </div>
+    <div id="articles-container"></div>
+</div>
+
+<script>
+    // 基于测试日志的完整结构化数据
+    const testResults = [
+        {
+            title: "2026 年最佳非 iPhone 智能手机：令人印象深刻的平价替代品",
+            expectedCount: 11, extractedCount: 11,
+            precision: 90.91, recall: 90.91, f1: 90.91,
+            extracted: ["谷歌 Pixel 10 Pro","一加 15","OPPO Find X9 Pro","vivo X300 Pro","Nothing Phone 3","小米 15T Pro","荣耀 Magic 8 Pro","摩托罗拉 Razr 60 Ultra","POCO F8 Ultra","HMD Fusion","Nothing Phone (4a) Pro"],
+            expected: ["Pixel 10 Pro","OnePlus 15","Oppo Find X9 Pro","Vivo X300 Pro","Nothing Phone 3","小米 15T Pro","荣耀 Magic 8 Pro","摩托罗拉 Razr 60 Ultra","POCO F8 Ultra","HMD Fusion","Nothing Phone 3"],
+            matchMap: {
+                "Pixel 10 Pro": "谷歌 Pixel 10 Pro",
+                "OnePlus 15": null,
+                "Oppo Find X9 Pro": "OPPO Find X9 Pro",
+                "Vivo X300 Pro": "vivo X300 Pro",
+                "Nothing Phone 3": "Nothing Phone 3",
+                "小米 15T Pro": "小米 15T Pro",
+                "荣耀 Magic 8 Pro": "荣耀 Magic 8 Pro",
+                "摩托罗拉 Razr 60 Ultra": "摩托罗拉 Razr 60 Ultra",
+                "POCO F8 Ultra": "POCO F8 Ultra",
+                "HMD Fusion": "HMD Fusion"
+            },
+            missed: ["OnePlus 15"],
+            extra: []
+        },
+        {
+            title: "Acer ยกระดับสายเกมมิ่ง! Predator และ Nitro โฉมใหม่บางเฉียบ ใส่ขุมพลัง AI เต็มสูบ",
+            expectedCount: 5, extractedCount: 5,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["Predator Helios Neo 16S AI","Acer Nitro V 16 AI","Acer Nitro V 16S AI","Predator Galea 570","Predator Cestus 530"],
+            expected: ["Predator Helios Neo 16S AI","Acer Nitro V 16 AI","Acer Nitro V 16S AI","Predator Galea 570","Predator Cestus 530"],
+            matchMap: {
+                "Predator Helios Neo 16S AI": "Predator Helios Neo 16S AI",
+                "Acer Nitro V 16 AI": "Acer Nitro V 16 AI",
+                "Acer Nitro V 16S AI": "Acer Nitro V 16S AI",
+                "Predator Galea 570": "Predator Galea 570",
+                "Predator Cestus 530": "Predator Cestus 530"
+            },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "AminoVital能量胶：运动员的完美伴侣，每次锻炼后都能快速补充能量并加快恢复速度。",
+            expectedCount: 1, extractedCount: 1,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["AminoVital能量胶"],
+            expected: ["AminoVital"],
+            matchMap: { "AminoVital": "AminoVital能量胶" },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "Edifier Hecate Air 2 หูฟังไร้สายแบบเปิดหู ทางเลือกใหม่ของการฟังที่สบาย ปลอดภัย และไม่ตัดขาดจากโลกจริง",
+            expectedCount: 1, extractedCount: 1,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["Edifier Hecate Air 2"],
+            expected: ["Edifier Hecate Air 2"],
+            matchMap: { "Edifier Hecate Air 2": "Edifier Hecate Air 2" },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "JisuLife Table Fan Pro 3 พัดลมตั้งโต๊ะออลอินวัน",
+            expectedCount: 1, extractedCount: 1,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["JisuLife Table Fan Pro 3"],
+            expected: ["JisuLife Table Fan Pro 3"],
+            matchMap: { "JisuLife Table Fan Pro 3": "JisuLife Table Fan Pro 3" },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "MSI PRO MP251L E2 จอมอนิเตอร์ 120Hz สายทำงานที่ลื่นตา ใช้งานสบาย และเผื่อเล่นเกมได้แบบไม่ฝืน",
+            expectedCount: 1, extractedCount: 1,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["MSI PRO MP251L E2"],
+            expected: ["MSI PRO MP251L E2"],
+            matchMap: { "MSI PRO MP251L E2": "MSI PRO MP251L E2" },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "OnePlus Turbo โผล่ทดสอบ Geekbench เผยชิปแรง Snapdragon 8s Gen 4 แบต 9,000mAh อาจเขย่าตลาดต้นปี",
+            expectedCount: 3, extractedCount: 1,
+            precision: 100.0, recall: 33.33, f1: 50.0,
+            extracted: ["OnePlus Turbo"],
+            expected: ["OnePlus Turbo","OnePlus Turbo (PLU110)","OnePlus Turbo (รุ่นแรงกว่า Snapdragon 8 Gen 5)"],
+            matchMap: { "OnePlus Turbo": "OnePlus Turbo" },
+            missed: ["OnePlus Turbo (PLU110)","OnePlus Turbo (รุ่นแรงกว่า Snapdragon 8 Gen 5)"],
+            extra: []
+        },
+        {
+            title: "PENTAX 17 กล้องฟิล์มคอมแพคแบบ Half-Frame ที่ปลุกเสน่ห์การถ่ายภาพยุคอนาล็อกให้กลับมาอีกครั้ง",
+            expectedCount: 1, extractedCount: 1,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["PENTAX 17"],
+            expected: ["PENTAX 17"],
+            matchMap: { "PENTAX 17": "PENTAX 17" },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "Realme 16 Pro และ 16 Pro+ เปิดเกมกล้องเดือด 200MP ซูมไกล 120x สายถ่ายรูปมีสะดุ้ง",
+            expectedCount: 2, extractedCount: 2,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["Realme 16 Pro","Realme 16 Pro+"],
+            expected: ["Realme 16 Pro","Realme 16 Pro+"],
+            matchMap: {
+                "Realme 16 Pro": "Realme 16 Pro",
+                "Realme 16 Pro+": "Realme 16 Pro+"
+            },
+            missed: [],
+            extra: []
+        },
+        {
+            title: "แนะนำปัตตาเลี่ยนตัดผมไร้สายราคาย่อมเยา",
+            expectedCount: 2, extractedCount: 2,
+            precision: 100.0, recall: 100.0, f1: 100.0,
+            extracted: ["KEMEI KM-1407","ENCHEN Beardo 2"],
+            expected: ["KEMEI KM-1407","ENCHEN Beardo 2 Electric Multi-Functional Trimmer"],
+            matchMap: {
+                "KEMEI KM-1407": "KEMEI KM-1407",
+                "ENCHEN Beardo 2 Electric Multi-Functional Trimmer": "ENCHEN Beardo 2"
+            },
+            missed: [],
+            extra: []
+        }
+    ];
+
+    // 计算总体统计
+    function buildSummary() {
+        const totalArticles = testResults.length;
+        let sumPrecision = 0, sumRecall = 0, sumF1 = 0;
+        let singlePrec = [], singleRec = [], multiPrec = [], multiRec = [];
+        
+        for (let i = 0; i < testResults.length; i++) {
+            const r = testResults[i];
+            sumPrecision += r.precision;
+            sumRecall += r.recall;
+            sumF1 += r.f1;
+            // 分类：单产品文章（期望数量<=1）
+            const isSingle = r.expectedCount <= 1;
+            if (isSingle) {
+                singlePrec.push(r.precision);
+                singleRec.push(r.recall);
+            } else {
+                multiPrec.push(r.precision);
+                multiRec.push(r.recall);
+            }
+        }
+        const avgPrec = sumPrecision / totalArticles;
+        const avgRecall = sumRecall / totalArticles;
+        const avgF1 = sumF1 / totalArticles;
+        const singleAvgPrec = singlePrec.length ? singlePrec.reduce((a,b)=>a+b,0)/singlePrec.length : 0;
+        const singleAvgRec = singleRec.length ? singleRec.reduce((a,b)=>a+b,0)/singleRec.length : 0;
+        const multiAvgPrec = multiPrec.length ? multiPrec.reduce((a,b)=>a+b,0)/multiPrec.length : 0;
+        const multiAvgRec = multiRec.length ? multiRec.reduce((a,b)=>a+b,0)/multiRec.length : 0;
+        
+        document.getElementById('summary-stats').innerHTML = `
+            <div class="stat-block"><div class="stat-label">总文章数</div><div class="stat-number">${totalArticles}</div><div class="stat-detail">✅ 全部成功</div></div>
+            <div class="stat-block"><div class="stat-label">平均精确率</div><div class="stat-number">${avgPrec.toFixed(1)}%</div><div class="stat-detail">多产品: ${multiAvgPrec.toFixed(1)}%</div></div>
+            <div class="stat-block"><div class="stat-label">平均召回率</div><div class="stat-number">${avgRecall.toFixed(1)}%</div><div class="stat-detail">单品: ${singleAvgRec.toFixed(0)}% / 多品: ${multiAvgRec.toFixed(1)}%</div></div>
+            <div class="stat-block"><div class="stat-label">平均F1分数</div><div class="stat-number">${avgF1.toFixed(1)}%</div><div class="stat-detail">最高F1: 100%</div></div>
+        `;
+    }
+
+    // 构建每一行的对比数据
+    function buildAlignedRows(article) {
+        const rows = [];
+        const matchMap = article.matchMap || {};
+        
+        // 遍历每个期望产品，找到对应的LLM提取值
+        for (let i = 0; i < article.expected.length; i++) {
+            const exp = article.expected[i];
+            const matchedExtract = matchMap[exp];
+            const isMatched = matchedExtract !== undefined && matchedExtract !== null;
+            
+            let note = '';
+            let status = '';
+            
+            if (isMatched) {
+                status = 'matched';
+                if (matchedExtract === exp) {
+                    note = '✅ 完全一致';
+                } else {
+                    note = '✅ 宽松匹配（别名/空格/系列词）';
+                }
+            } else {
+                status = 'missed';
+                note = '❌ 漏提取';
+            }
+            
+            rows.push({
+                expected: exp,
+                extractedValue: matchedExtract || '—',
+                status: status,
+                note: note
+            });
+        }
+        
+        // 处理误提取：提取了但不在匹配映射中（精确率问题）
+        if (article.extra && article.extra.length > 0) {
+            for (let ext of article.extra) {
+                rows.push({
+                    expected: '—',
+                    extractedValue: ext,
+                    status: 'extra',
+                    note: '⚠️ 误提取（非标注产品）'
+                });
+            }
+        }
+        
+        return rows;
+    }
+
+    function renderArticles() {
+        const container = document.getElementById('articles-container');
+        if (!container) return;
+        let html = '';
+        
+        for (let idx = 0; idx < testResults.length; idx++) {
+            const art = testResults[idx];
+            const precisionPercent = art.precision.toFixed(1);
+            const recallPercent = art.recall.toFixed(1);
+            const hasIssue = (art.precision < 100.0 || art.recall < 100.0);
+            const statusIcon = hasIssue ? '⚠️' : '✅';
+            const rows = buildAlignedRows(art);
+            
+            html += `
+                <div class="card article-item">
+                    <div class="article-head">
+                        <div class="article-title">
+                            <span class="icon-em">${statusIcon}</span>
+                            <span>${escapeHtml(art.title)}</span>
+                            ${art.precision === 100.0 && art.recall === 100.0 ? '<span class="badge-success" style="font-size:0.65rem;">完美匹配</span>' : ''}
+                            ${art.precision < 100.0 ? '<span class="badge-warning" style="background:#fff0e0; padding:2px 12px; border-radius:20px; font-size:0.65rem;">精确率受损</span>' : ''}
+                        </div>
+                        <div class="metric-pills">
+                            <span class="pill pill-prec">🎯 精确 ${precisionPercent}%</span>
+                            <span class="pill pill-recall">📌 召回 ${recallPercent}%</span>
+                            <span class="pill">⚖️ F1 ${art.f1.toFixed(1)}%</span>
+                            <span class="pill">📦 ${art.extractedCount}/${art.expectedCount}</span>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="compare-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42%">🤖 LLM 提取结果 (Extracted)</th>
+                                    <th style="width:42%">📋 实际期望 (Expected)</th>
+                                    <th style="width:16%">对比结论</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            for (let row of rows) {
+                let statusHtml = '';
+                let rowBg = '';
+                if (row.status === 'matched') {
+                    statusHtml = `<span class="match-tag">✓ 匹配</span>`;
+                } else if (row.status === 'missed') {
+                    statusHtml = `<span class="match-tag miss-tag">✗ 漏提</span>`;
+                    rowBg = 'style="background:#fff6f5;"';
+                } else if (row.status === 'extra') {
+                    statusHtml = `<span class="match-tag extra-tag">⚠️ 误提取</span>`;
+                    rowBg = 'style="background:#fffaf2;"';
+                }
+                html += `<tr ${rowBg}>
+                    <td class="extract-cell">${escapeHtml(row.extractedValue)}</td>
+                    <td class="expect-cell">${escapeHtml(row.expected)}</td>
+                    <td class="align-center">${statusHtml}<div class="status-note">${escapeHtml(row.note)}</div></td>
+                </tr>`;
+            }
+            
+            html += `</tbody>
+                        </table>
+                    </div>`;
+            
+            // 附加说明
+            if (art.missed && art.missed.length > 0) {
+                html += `<div class="footnote-box">❌ 漏提产品: ${art.missed.map(m => `“${escapeHtml(m)}”`).join('、')}<br>🔍 原因: 模型未识别出变体型号或同系列别名。</div>`;
+            } else if (art.extra && art.extra.length > 0) {
+                html += `<div class="footnote-box">⚠️ 误提取产品: ${art.extra.map(e => `“${escapeHtml(e)}”`).join('、')}<br>🔍 说明: LLM额外提取了相似型号/系列词，影响精确率但未漏掉核心产品。</div>`;
+            } else if (art.precision === 100.0 && art.recall === 100.0) {
+                html += `<div style="margin:0 20px 20px 20px; background:#eaf9ef; border-radius:18px; padding:8px 16px; font-size:0.7rem; color:#2b6e3c;">✔️ 所有产品完全匹配，包含品牌别名、空格差异、系列描述词的宽松匹配均生效。</div>`;
+            }
+            html += `</div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        if (str === undefined || str === null) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    buildSummary();
+    renderArticles();
+</script>
+</body>
+</html>

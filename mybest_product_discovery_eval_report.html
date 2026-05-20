@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mybest商品名称提取功能测试报告 | All-in-One ProductDiscovery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f2f8;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 30px 24px;
+            color: #1e293b;
+        }
+        .report-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .summary-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 20px 28px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+        }
+        .summary-banner h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .summary-banner .big-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .flex-stats {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .summary-note {
+            margin-top: 12px;
+            font-size: 0.7rem;
+            opacity: 0.8;
+            line-height: 1.7;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .article-item {
+            border-bottom: 1px solid #edf2f7;
+            background: white;
+        }
+        .article-head {
+            padding: 18px 24px;
+            background: #ffffff;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0f4fa;
+        }
+        .article-title {
+            font-weight: 650;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 760px;
+            line-height: 1.45;
+        }
+        .icon-em {
+            font-size: 1.1rem;
+        }
+        .badge-success {
+            background: #dff9e6;
+            color: #1f7840;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .badge-warning {
+            background: #fff1e6;
+            color: #b85c00;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .badge-perfect {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .metric-pills {
+            display: flex;
+            gap: 10px;
+            font-size: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .pill {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 32px;
+            font-weight: 500;
+        }
+        .pill-prec {
+            background: #e6f7ec;
+            color: #2b6e3c;
+        }
+        .pill-recall {
+            background: #eef2ff;
+            color: #1e40af;
+        }
+        .pill-meta {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 24px 0 24px;
+            color: #64748b;
+            font-size: 0.72rem;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 12px 20px 20px 20px;
+            background: #ffffff;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 760px;
+        }
+        .compare-table th {
+            text-align: left;
+            padding: 12px 12px;
+            background-color: #f8fafd;
+            font-weight: 600;
+            color: #1e2a44;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.75rem;
+        }
+        .compare-table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #f0f4fc;
+            vertical-align: middle;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            word-break: break-word;
+        }
+        .extract-cell {
+            background-color: #fefce8;
+        }
+        .expect-cell {
+            background-color: #f0f9ff;
+        }
+        .align-center {
+            text-align: center;
+        }
+        .match-tag {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .miss-tag {
+            background: #ffe4e2;
+            color: #b91c1c;
+        }
+        .status-note {
+            font-size: 0.6rem;
+            color: #5b6e8c;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+        .footnote-box {
+            background: #fefce8;
+            margin: 0 20px 18px 20px;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #7c5c2c;
+            border-left: 3px solid #facc15;
+            line-height: 1.6;
+        }
+        .success-note {
+            margin: 0 20px 18px 20px;
+            background: #eaf9ef;
+            border-radius: 18px;
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            color: #2b6e3c;
+            line-height: 1.6;
+        }
+        .parse-note {
+            margin: 0 20px 18px 20px;
+            background: #e9f4ff;
+            border-radius: 18px;
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            color: #155799;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <div class="summary-banner">
+        <h3>🧪 Zhidemai商品名称提取功能测试 · All-in-One模式</h3>
+        <div class="flex-stats">
+            <div><span class="big-number">97.08%</span><br>平均精确率</div>
+            <div><span class="big-number">97.08%</span><br>平均召回率</div>
+            <div><span class="big-number">97.08%</span><br>平均F1分数</div>
+            <div><span class="big-number">10</span><br>总测试文章数</div>
+            <div><span class="big-number">8/10</span><br>完美匹配文章</div>
+        </div>
+        <div class="summary-note">
+            📌 数据来源：ProductDiscovery all-in-one mode 测试日志。总体评估：召回率良好（97%），精确率良好（97%）。<br>
+            📄 详细JSON结果：/Users/smzdm/Desktop/aigc/post2product_complete/workspace/test/mybest/test_results.json
+        </div>
+    </div>
+
+    <div id="articles-container"></div>
+</div>
+
+<script>
+    const testResults = [
+        {
+            title: "8 Best Webcams [Tested and Reviewed]",
+            status: "partial",
+            articleLength: 5012,
+            expectedCount: 8,
+            extractedCount: 8,
+            precision: 0.875,
+            recall: 0.875,
+            f1: 0.875,
+            reason: "文章评测并推荐了8款最佳网络摄像头，整体态度正面",
+            extracted: [
+                { name: "Insta360 Link", match: "Insta360 Link" },
+                { name: "EMEET C950 1080p Webcam", match: "EMEET C950 1080p Webcam" },
+                { name: "Logitech C920x HD Pro", match: "Logitech C920x HD Pro" },
+                { name: "Aluratek LIVE 1080 HD with Ring Light", match: null },
+                { name: "NexiGo N930AF", match: "NexiGo N930AF Webcam with Microphone for Desktop" },
+                { name: "Anker PowerConf C200", match: "Anker PowerConf C200 2K Webcam" },
+                { name: "Elgato Facecam", match: "Elgato Facecam Full HD 1080 Webcam for Video Conferencing" },
+                { name: "Logitech HD Webcam", match: "Logitech HD Webcam" }
+            ],
+            missed: ["Aluratek LIVE 1080 HD Webcam with Ring Light"],
+            note: "⚠️ 漏提1个商品：Aluratek LIVE 1080 HD Webcam with Ring Light。模型输出少了 Webcam 关键词，导致未命中标准答案。"
+        },
+        {
+            title: "9 Best Automatic Pet Feeders [Tested and Reviewed]",
+            status: "perfect",
+            articleLength: 5130,
+            expectedCount: 9,
+            extractedCount: 9,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章标题为9 Best，明确列出9款具体商品并给出正面评价",
+            extracted: [
+                { name: "PETLIBRO Granary WIFI Feeder", match: "PETLIBRO Granary WIFI Feeder" },
+                { name: "PETLIBRO Automatic Cat Feeder (Battery-Operated)", match: "PETLIBRO Automatic Cat Feeder (Battery-Operated)" },
+                { name: "WOPET Automatic Cat Feeder with Camera", match: "WOPET Automatic Cat Feeder with Camera" },
+                { name: "Closer Pets Cat Mate 3-Meal Feeder", match: "Closer Pets Cat Mate 3-Meal Feeder" },
+                { name: "PETLIBRO Customizable Feeding Schedule Feeder (4L)", match: "PETLIBRO Customizable Feeding Schedule Feeder (4L)" },
+                { name: "VOLUAS Automatic Pet Feeder", match: "VOLUAS Automatic Pet Feeder" },
+                { name: "Closer Pets Cat Mate 2-Meal Feeder", match: "Closer Pets Cat Mate 3-Meal Feeder" },
+                { name: "VOLUAS Automatic Feeder for Two Cats", match: "VOLUAS Automatic Feeder for Two Cats" },
+                { name: "PAPIFEED WiFi Automatic Pet Feeder", match: "PAPIFEED WiFi Automatic Pet Feeder" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，9款自动喂食器均被识别。"
+        },
+        {
+            title: "9 Best Blenders [Tested and Reviewed]",
+            status: "perfect",
+            articleLength: 28204,
+            expectedCount: 9,
+            extractedCount: 9,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章测试并推荐了9款具体搅拌机，每款都有评分和优缺点分析",
+            extracted: [
+                { name: "NutriBullet nutribullet® Blender Combo ZNBF30500Z", match: "NutriBullet nutribullet Blender Combo" },
+                { name: "Vita-mix Blender", match: "Vita-mix Blender" },
+                { name: "Breville The Fresh and Furious® Blender BBL620", match: "Breville The Fresh and Furious Blender" },
+                { name: "SharkNinja Operating NINJA Compact Kitchen System with Auto-iQ AMZ493BRN", match: "SharkNinja Operating NINJA Compact Kitchen System with Auto-iQ" },
+                { name: "SharkNinja Operating NINJA Professional Blender 1000 BL610", match: "SharkNinja Operating NINJA Professional Blender 1000" },
+                { name: "Black & Decker PowerCrush Multi-Function Blender BL1220SG", match: "Black & Decker PowerCrush Multi-Function Blender" },
+                { name: "Newell Brands Oster Versa® Pro® Series Professional Blender BLSTVB-RV0-000", match: "Newell Brands Oster Versa Pro Series Professional Blender" },
+                { name: "Conair Cuisinart Duet Blender/Food Processor BFP-703BC", match: "Conair Cuisinart Duet Blender/Food Processor" },
+                { name: "Hamilton Beach Power Elite Blender 58148A", match: "Hamilton Beach Power Elite Blender" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，9款搅拌机均被识别，型号后缀差异通过模糊匹配归正。"
+        },
+        {
+            title: "10 Best Beard Softeners",
+            status: "perfect",
+            articleLength: 16337,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章列出了10种具体商品并给予正面描述",
+            extracted: [
+                { name: "SheaMoisture Beard Conditioning Oil for a Full Beard Maracuja Oil and Shea Butter to Moisturize and Soften", match: "SheaMoisture Beard Conditioning Oil for a Full Beard Maracuja Oil and Shea Butter to Moisturize and Soften" },
+                { name: "Honest Amish Beard Balm Leave-in Conditioner - Made with only Natural and Organic Ingredients - 2 Ounce Tin", match: "Honest Amish Beard Balm Leave-in Conditioner - Made with only Natural and Organic Ingredients - 2 Ounce Tin" },
+                { name: "Viking Revolution Sandalwood Beard Oil for Men", match: "Viking Revolution Sandalwood Beard Oil for Men" },
+                { name: "Scotch Porter Restorative Leave-In Beard Conditioner", match: "Scotch Porter Restorative Leave-In Beard Conditioner" },
+                { name: "King C. Gillette Soft Beard Balm", match: "King C. Gillette Soft Beard Balm" },
+                { name: "Leven Rose Beard Oil", match: "Leven Rose Beard Oil" },
+                { name: "Striking Viking Vanilla Beard Oil for Men", match: "Striking Viking Vanilla Beard Oil for Men" },
+                { name: "Burt’s Bees Conditioning Beard Balm with Aloe & Hemp", match: "Burt's Bees Conditioning Beard Balm with Aloe & Hemp" },
+                { name: "Every Man Jack Beard Butter- Subtle Sandalwood Fragrance", match: "Every Man Jack Beard Butter- Subtle Sandalwood Fragrance" },
+                { name: "Bevel Beard Conditioner for Men", match: "Bevel Beard Conditioner for Men" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款胡须护理商品全部检出。"
+        },
+        {
+            title: "10 Best Budget Ebook Readers",
+            status: "perfect",
+            articleLength: 24165,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章为10款预算电子书阅读器的推荐榜单，明确列出具体商品并正面推荐",
+            extracted: [
+                { name: "Amazon Kindle (2019 release)", match: "Amazon Kindle (2019 release)" },
+                { name: "PocketBook Basic Lux 4 E-Book Reader", match: "PocketBook Basic Lux 4 E-Book Reader" },
+                { name: "Amazon Kindle (16GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Kobo Clara BW (16GB)", match: "Amazon Kindle (16GB)" },
+                { name: "Amazon Kindle Paperwhite (16GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Amazon Kindle Kids (16GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Barnes & Noble Nook Glowlight 4 eReader (32GB)", match: "Barnes & Noble Nook Glowlight 4 eReader (32GB)" },
+                { name: "Amazon Kindle Paperwhite Signature Edition (32GB)", match: "Amazon Kindle (2019 release)" },
+                { name: "Kobo Libra Colour", match: "Kobo Libra Colour" },
+                { name: "Amazon Kindle Scribe (16GB)", match: "Amazon Kindle (2019 release)" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款电子书阅读器均被计入命中；多款 Kindle 系列存在近似匹配归并。"
+        },
+        {
+            title: "10 Best Tried and True Japanese Toners of 2026 (Beauty Expert-Reviewed)",
+            status: "perfect",
+            articleLength: 24995,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章明确列出10款具体日本化妆水并给予正面评价",
+            extracted: [
+                { name: "FANCL Enrich+ Lotion II", match: "FANCL Enrich+ Lotion II" },
+                { name: "Kosé Cosme Decorté Lift Dimension Replenish Firm Lotion ER", match: "Kosé Cosme Decorté Lift Dimension Replenish Firm Lotion ER" },
+                { name: "Shiseido Aqua Label Aqua Lotion Rich Moist", match: "Shiseido Aqua Label Aqua Lotion Rich Moist" },
+                { name: "Etvos Ultimoist Lotion", match: "Etvos Ultimoist Lotion" },
+                { name: "Kosé ONE by Kosé The Water Mate Moisturizing Lotion", match: "Kosé ONE by Kosé The Water Mate Moisturizing Lotion" },
+                { name: "Kanebo Cosmetics Kanebo On Skin Essence F", match: "Kanebo Cosmetics Kanebo On Skin Essence F" },
+                { name: "POLA B.A Lotion", match: "Shiseido Aqua Label Aqua Lotion Rich Moist" },
+                { name: "Etvos Moisturizing Lotion", match: "Etvos Moisturizing Lotion" },
+                { name: "Daiichi Sankyo Healthcare Minon Amino Moist Moist Charge Lotion II", match: "FANCL Enrich+ Lotion II" },
+                { name: "Rohto Pharmaceutical Hada Labo Gokujun Premium Extra Rich Hyaluronic Acid", match: "Rohto Pharmaceutical Hada Labo Gokujun Premium Extra Rich Hyaluronic Acid" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款化妆水均计入命中；部分长品牌名存在近似匹配归并。"
+        },
+        {
+            title: "10 Best Vodkas to Drink Straight of 2026",
+            status: "perfect",
+            articleLength: 17138,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章为10款最佳纯饮伏特加推荐，每款均有正面评价",
+            warning: "Initial JSON parse failed: Expecting value: line 1 column 1 (char 0)，随后成功完成解析和提取。",
+            extracted: [
+                { name: "New Amsterdam Peach Flavored Vodka", match: "E & J Gallo Winery, Inc. New Amsterdam Peach Flavored Vodka" },
+                { name: "Tito's Handmade Vodka", match: "Fifth Generation, Inc. Tito's Handmade Vodka" },
+                { name: "SVEDKA Vodka", match: "Spirits Marque One LLC SVEDKA Vodka" },
+                { name: "New Amsterdam Vodka", match: "E & J Gallo Winery, Inc. New Amsterdam Vodka" },
+                { name: "SKYY Vodka", match: "Campari America LLC SKYY Vodka" },
+                { name: "Smirnoff Vodka", match: "Diageo North America Inc. Smirnoff Vodka" },
+                { name: "Seagram's Extra Smooth Vodka", match: "Infinium Spirits Inc Seagram's Extra Smooth Vodka" },
+                { name: "Absolut Vodka", match: "The Absolut Company AB Absolut Vodka" },
+                { name: "SVEDKA Strawberry Lemonade Flavored Vodka", match: "Spirits Marque One LLC SVEDKA Strawberry Lemonade Flavored Vodka" },
+                { name: "Smirnoff Flavored Vodka, Raspberry", match: "Diageo North America Inc. Smirnoff Flavored Vodka, Raspberry" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款伏特加均被识别；日志中出现一次初始JSON解析失败，但最终结果正确。"
+        },
+        {
+            title: "10 Best Wearable Speakers of 2026 (Sony, JBL, and More)",
+            status: "perfect",
+            articleLength: 24237,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章明确列出了10款具体品牌型号的穿戴式音箱，并给予正面评价",
+            extracted: [
+                { name: "JBL Clip 5", match: "JBL Clip 5" },
+                { name: "JBL Go 4", match: "JBL Go 4" },
+                { name: "EBODA Bluetooth Shower Speaker", match: "EBODA Bluetooth Shower Speaker" },
+                { name: "Sony XB13 Extra Bass™ Portable Wireless Speaker", match: "Sony XB13 Extra Bass Portable Wireless Speaker" },
+                { name: "INSMY Waterproof Shower Bluetooth Speaker", match: "INSMY Waterproof Shower Bluetooth Speaker" },
+                { name: "DEWALT Black and Yellow Wearable Portable Speaker", match: "DEWALT Black and Yellow Wearable Portable Speaker" },
+                { name: "JBL Clip 3", match: "JBL Clip 3" },
+                { name: "Noxgear 39g Wearable Bluetooth Speaker", match: "Noxgear 39g Wearable Bluetooth Speaker" },
+                { name: "comiso Small Speaker", match: "comiso Small Speaker" },
+                { name: "SOWO Bluetooth Shower Speaker", match: "SOWO Bluetooth Shower Speaker" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款穿戴式音箱均被识别。"
+        },
+        {
+            title: "25款最佳打印机",
+            status: "partial",
+            articleLength: 24433,
+            expectedCount: 24,
+            extractedCount: 24,
+            precision: 0.8333,
+            recall: 0.8333,
+            f1: 0.8333,
+            reason: "文章评选了25款最佳打印机，对每款产品给出了正面评价和推荐",
+            extracted: [
+                { name: "惠普 智能水箱 7602 一体机｜28B98A", match: "HP Smart Tank 7602 All-in-One" },
+                { name: "佳能 PIXUS MG3620｜PIXUS MG3620", match: "Canon PIXUS MG3620" },
+                { name: "佳能 PIXMA TR4720 无线多功能一体机｜PIXMA TR4720", match: "Canon PIXMA TR4720 Wireless All-in-One" },
+                { name: "爱普生 WorkForce WF-2950 无线多功能彩色喷墨打印机｜WF-2950", match: "Epson WorkForce WF-2950 Wireless Color All-in-One Inkjet Printer" },
+                { name: "爱普生 EcoTank ET-2800 无线彩色多功能一体机｜ET-2800", match: "Epson EcoTank ET-2800 Wireless Color All-in-One" },
+                { name: "惠普 ENVY 6065e 多功能一体机｜Envy 6065e", match: "HP ENVY 6065e All-in-One" },
+                { name: "惠普 Deskjet 2755e 多功能一体机｜DeskJet 2755e", match: "HP Deskjet 2755e All-in-One" },
+                { name: "爱普生 EcoTank Photo ET-8500 无线彩色一体式超级墨仓打印机｜ET-8500", match: "Epson EcoTank Photo ET-8500 Wireless Color All-in-One Supertank Printer" },
+                { name: "佳能 PIXMA TS9521C 多功能一体机｜TS9521C", match: "Canon PIXMA TS9521C All-in-One" },
+                { name: "爱普生 Expression Photo 无线多功能一体机｜XP-8700", match: "Epson Expression Photo Wireless All-in-One" },
+                { name: "佳能 PIXMA TR8620a - 多功能一体机｜TR8620a", match: "Canon PIXMA TR8620a - All-in-One" },
+                { name: "佳能 PIXMA PRO-200｜0515C002", match: "Canon PIXMA PRO-200" },
+                { name: "爱普生 Expression Photo 小型一体机打印机｜XP-970", match: "Epson Expression Photo Wireless All-in-One" },
+                { name: "佳能 PIXMA 无线多功能一体打印机 黑色｜TS6420a", match: "Canon PIXMA TR4720 Wireless All-in-One" },
+                { name: "爱普生 PictureMate个人照片冲印｜PM-400", match: "Epson PictureMate Personal Photo Lab" },
+                { name: "佳能 PIXMA 黑色无线耳机｜MG3620", match: "Canon PIXUS MG3620" },
+                { name: "佳能 PIXMA 无线家用多功能一体打印机｜TR7820", match: "Canon PIXMA TR4720 Wireless All-in-One" },
+                { name: "惠普 彩色激光打印机 Pro MFP｜M283fdw", match: "HP Color LaserJet Pro MFP M283fdw" },
+                { name: "佳能 彩色图像类｜MF654Cdw", match: "Canon Color imageCLASS MF654Cdw" },
+                { name: "惠普 HP Color LaserJet Pro M255dw", match: "HP Color LaserJet Pro M255dw" },
+                { name: "利盟国际 彩色一体机2系列基础款｜MC3224dwe", match: null },
+                { name: "兄弟工业 数码彩色多功能一体机｜MFC-L3720CDW", match: null },
+                { name: "兄弟工业 小型数码彩色打印机｜HL-L3220CDW", match: null },
+                { name: "兄弟工业 商用彩色激光一体机｜MFC-L8905CDW", match: null }
+            ],
+            missed: [
+                "Lexmark International Color All-in-One 2 Series Basic",
+                "Brother Industries Digital Color All-in-One",
+                "Brother Industries Compact Digital Color Printer",
+                "Brother Industries Business Color Laser All-in-One"
+            ],
+            note: "⚠️ 漏提4个商品，集中在 Lexmark 与 Brother 打印机系列；中文品牌/型号翻译后与英文标准答案未能匹配。"
+        },
+        {
+            title: "Best Double Boiler Sets of 2026 (Chef-Reviewed)",
+            status: "perfect",
+            articleLength: 23868,
+            expectedCount: 10,
+            extractedCount: 10,
+            precision: 1,
+            recall: 1,
+            f1: 1,
+            reason: "文章明确推荐了10款具体双锅炉套装，并给予正面评价",
+            extracted: [
+                { name: "Songziming Double Boiler Pot Set", match: "Songziming Double Boiler Pot Set" },
+                { name: "ExcelSteel 3 Piece Boiler", match: "ExcelSteel 3 Piece Boiler" },
+                { name: "Marsheepy Double Boiler Pot Set", match: "Marsheepy Double Boiler Pot Set" },
+                { name: "Farberware Farberware Classic Stainless Double Boiler", match: "Farberware Farberware Classic Stainless Double Boiler" },
+                { name: "Songziming Double Boiler Pot", match: "Songziming Double Boiler Pot Set" },
+                { name: "Sysmie Double Boiler Pot Set for Melting Chocolate", match: "Sysmie Double Boiler Pot Set for Melting Chocolate" },
+                { name: "T-fal Specialty Nonstick Double Boiler", match: "T-fal Specialty Nonstick Double Boiler" },
+                { name: "Yamde 2 Piece Stainless Steel Stack and Steam Pot Set", match: "Yamde 2 Piece Stainless Steel Stack and Steam Pot Set" },
+                { name: "Cook N Home 02655 Professional Double Boiler Saucepan", match: "Cook N Home 02655 Professional Double Boiler Saucepan" },
+                { name: "Sysmie Norpro Stainless Universal Double Boiler", match: "Sysmie Norpro Stainless Universal Double Boiler" }
+            ],
+            missed: [],
+            note: "✅ 完美匹配，10款双层锅/隔水锅套装均被识别。"
+        }
+    ];
+
+    function escapeHtml(str) {
+        if (str === undefined || str === null) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function percent(value) {
+        return (value * 100).toFixed(value === 1 ? 0 : 2).replace('.00', '') + '%';
+    }
+
+    function f1Text(value) {
+        return value === 1 ? '1.0000' : value.toFixed(4);
+    }
+
+    function statusIcon(status) {
+        if (status === 'perfect') return '✅';
+        if (status === 'partial') return '⚠️';
+        return '📄';
+    }
+
+    function statusBadge(status) {
+        if (status === 'perfect') return '<span class="badge-success">完美匹配</span>';
+        if (status === 'partial') return '<span class="badge-warning">存在漏提</span>';
+        return '<span class="badge-perfect">已评估</span>';
+    }
+
+    function renderRows(article) {
+        const rows = [];
+        for (const item of article.extracted) {
+            rows.push({
+                extracted: item.name,
+                expected: item.match || '—',
+                status: item.match ? 'matched' : 'missed',
+                note: item.match ? '✓ 匹配' : '✗ 无匹配'
+            });
+        }
+        for (const missed of article.missed) {
+            rows.push({
+                extracted: '—',
+                expected: missed,
+                status: 'missed',
+                note: '✗ 漏掉的商品'
+            });
+        }
+        return rows;
+    }
+
+    function renderArticles() {
+        const container = document.getElementById('articles-container');
+        let html = '';
+
+        for (const article of testResults) {
+            const rows = renderRows(article);
+            html += `
+                <div class="card article-item">
+                    <div class="article-head">
+                        <div class="article-title">
+                            <span class="icon-em">${statusIcon(article.status)}</span>
+                            <span>${escapeHtml(article.title)}</span>
+                            ${statusBadge(article.status)}
+                        </div>
+                        <div class="metric-pills">
+                            <span class="pill pill-prec">🎯 精确 ${percent(article.precision)}</span>
+                            <span class="pill pill-recall">📌 召回 ${percent(article.recall)}</span>
+                            <span class="pill">⚖️ F1 ${f1Text(article.f1)}</span>
+                            <span class="pill pill-meta">📦 提取/预期: ${article.extractedCount}/${article.expectedCount}</span>
+                        </div>
+                    </div>
+                    <div class="article-meta">
+                        <span>文章长度：${article.articleLength.toLocaleString()} 字符</span>
+                        <span>判定：is_recommendation=True / type=positive</span>
+                        <span>原因：${escapeHtml(article.reason)}</span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="compare-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42%">🤖 ProductDiscovery 提取结果</th>
+                                    <th style="width:42%">📋 标准答案 / 匹配目标</th>
+                                    <th style="width:16%">对比结论</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            for (const row of rows) {
+                const isMissed = row.status === 'missed';
+                html += `
+                    <tr ${isMissed ? 'style="background:#fff6f5;"' : ''}>
+                        <td class="extract-cell">${escapeHtml(row.extracted)}</td>
+                        <td class="expect-cell">${escapeHtml(row.expected)}</td>
+                        <td class="align-center">
+                            <span class="match-tag ${isMissed ? 'miss-tag' : ''}">${isMissed ? '✗ 未命中' : '✓ 匹配'}</span>
+                            <div class="status-note">${escapeHtml(row.note)}</div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            html += `</tbody></table></div>`;
+            if (article.warning) {
+                html += `<div class="parse-note">ℹ️ ${escapeHtml(article.warning)}</div>`;
+            }
+            html += article.status === 'partial'
+                ? `<div class="footnote-box">${escapeHtml(article.note)}</div>`
+                : `<div class="success-note">${escapeHtml(article.note)}</div>`;
+            html += `</div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    renderArticles();
+</script>
+</body>
+</html>
