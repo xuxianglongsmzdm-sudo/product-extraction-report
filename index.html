@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProductDiscovery 商品提取评测后台</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f4f6f9;
+            --panel: #ffffff;
+            --ink: #162033;
+            --muted: #64748b;
+            --line: #dbe3ee;
+            --brand: #0f766e;
+            --brand-dark: #115e59;
+            --accent: #2563eb;
+            --good: #15803d;
+            --warn: #b45309;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.94);
+            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(14px);
+        }
+
+        .topbar-inner {
+            width: min(1500px, calc(100vw - 32px));
+            margin: 0 auto;
+            padding: 16px 0;
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.2;
+            font-weight: 760;
+            letter-spacing: 0;
+        }
+
+        .brand p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .action-link,
+        .select-wrap select {
+            height: 36px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--ink);
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 0.82rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
+        }
+
+        .action-link.primary {
+            background: var(--brand);
+            color: white;
+            border-color: var(--brand);
+        }
+
+        .action-link.primary:hover {
+            background: var(--brand-dark);
+        }
+
+        .main {
+            width: min(1500px, calc(100vw - 32px));
+            margin: 18px auto 28px;
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 88px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .summary-panel,
+        .dataset-list,
+        .report-panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .summary-panel {
+            padding: 16px;
+        }
+
+        .summary-panel h2,
+        .dataset-list h2 {
+            margin: 0 0 12px;
+            font-size: 0.82rem;
+            color: #334155;
+            font-weight: 720;
+        }
+
+        .metric-stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .metric {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .metric:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 0.76rem;
+        }
+
+        .metric strong {
+            font-size: 1rem;
+            color: var(--ink);
+        }
+
+        .dataset-list {
+            overflow: hidden;
+        }
+
+        .dataset-list h2 {
+            padding: 16px 16px 0;
+        }
+
+        .dataset-button {
+            width: 100%;
+            border: 0;
+            border-top: 1px solid #edf2f7;
+            background: transparent;
+            padding: 14px 16px;
+            text-align: left;
+            cursor: pointer;
+            color: var(--ink);
+            display: grid;
+            gap: 8px;
+        }
+
+        .dataset-button:hover {
+            background: #f8fafc;
+        }
+
+        .dataset-button.active {
+            background: #ecfdf5;
+            box-shadow: inset 4px 0 0 var(--brand);
+        }
+
+        .dataset-name {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.92rem;
+            font-weight: 720;
+        }
+
+        .dataset-meta {
+            color: var(--muted);
+            font-size: 0.74rem;
+            line-height: 1.45;
+        }
+
+        .pill {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            background: #ccfbf1;
+        }
+
+        .report-panel {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .report-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .report-title h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 760;
+            letter-spacing: 0;
+        }
+
+        .report-title p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(108px, 1fr));
+            gap: 10px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+            background: #fbfdff;
+        }
+
+        .kpi {
+            border: 1px solid #e6edf5;
+            background: white;
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-height: 70px;
+        }
+
+        .kpi span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.72rem;
+            margin-bottom: 8px;
+        }
+
+        .kpi strong {
+            display: block;
+            font-size: 1.34rem;
+            line-height: 1.1;
+            color: var(--ink);
+        }
+
+        .kpi.good strong {
+            color: var(--good);
+        }
+
+        .kpi.warn strong {
+            color: var(--warn);
+        }
+
+        .iframe-wrap {
+            height: calc(100vh - 245px);
+            min-height: 620px;
+            background: #eef2f7;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: white;
+        }
+
+        @media (max-width: 980px) {
+            .topbar-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                justify-content: flex-start;
+            }
+
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .dataset-list {
+                display: none;
+            }
+
+            .kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .iframe-wrap {
+                height: 72vh;
+                min-height: 520px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .topbar-inner,
+            .main {
+                width: calc(100vw - 20px);
+            }
+
+            .actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .action-link,
+            .select-wrap select {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .report-head {
+                grid-template-columns: 1fr;
+            }
+
+            .kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="brand">
+                    <h1>ProductDiscovery 商品提取评测后台</h1>
+                    <p>统一查看不同来源数据集的产品名称提取效果，老板打开一个链接即可切换报告。</p>
+                </div>
+                <div class="actions">
+                    <label class="select-wrap" aria-label="选择数据集">
+                        <select id="datasetSelect"></select>
+                    </label>
+                    <a id="openReport" class="action-link" href="#" target="_blank" rel="noopener">打开当前报告</a>
+                    <a class="action-link primary" href="https://github.com/xuxianglongsmzdm-sudo/product-extraction-report" target="_blank" rel="noopener">查看仓库</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <aside class="sidebar">
+                <section class="summary-panel" aria-labelledby="overallTitle">
+                    <h2 id="overallTitle">整体概览</h2>
+                    <div class="metric-stack">
+                        <div class="metric"><span>报告数量</span><strong>4</strong></div>
+                        <div class="metric"><span>覆盖文章</span><strong>43</strong></div>
+                        <div class="metric"><span>平均精确率区间</span><strong>96% - 99.1%</strong></div>
+                        <div class="metric"><span>平均召回率区间</span><strong>91% - 97.1%</strong></div>
+                    </div>
+                </section>
+
+                <nav class="dataset-list" aria-labelledby="datasetTitle">
+                    <h2 id="datasetTitle">数据集报告</h2>
+                    <div id="datasetButtons"></div>
+                </nav>
+            </aside>
+
+            <section class="report-panel" aria-live="polite">
+                <div class="report-head">
+                    <div class="report-title">
+                        <h2 id="reportName"></h2>
+                        <p id="reportDesc"></p>
+                    </div>
+                    <span id="reportBadge" class="pill"></span>
+                </div>
+                <div class="kpis" id="kpiGrid"></div>
+                <div class="iframe-wrap">
+                    <iframe id="reportFrame" title="商品提取评测报告"></iframe>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const reports = [
+            {
+                id: "smzdm",
+                name: "什么值得买测试集",
+                source: "All-in-One ProductDiscovery",
+                file: "test_results.html",
+                desc: "站内文章商品名称提取测试，适合看中文消费内容场景的整体稳定性。",
+                badge: "8/10 完美",
+                kpis: [
+                    ["平均精确率", "96.67%", "good"],
+                    ["平均召回率", "93.57%", "good"],
+                    ["平均 F1", "94.17%", "good"],
+                    ["总文章数", "10", ""]
+                ]
+            },
+            {
+                id: "mybest",
+                name: "Mybest 测试集",
+                source: "日本/榜单类内容",
+                file: "mybest_product_discovery_eval_report.html",
+                desc: "榜单类文章商品名称提取测试，覆盖多商品、型号差异和模糊匹配场景。",
+                badge: "8/10 完美",
+                kpis: [
+                    ["平均精确率", "97.08%", "good"],
+                    ["平均召回率", "97.08%", "good"],
+                    ["平均 F1", "97.08%", "good"],
+                    ["总文章数", "10", ""]
+                ]
+            },
+            {
+                id: "zestbuy",
+                name: "泰国 Zestbuy 测试集",
+                source: "知买测试详细对比",
+                file: "泰国zestbuy文章提取评测报告_副本.html",
+                desc: "泰国站内容评测，重点展示单品/多品文章在别名、空格和系列词上的宽松匹配表现。",
+                badge: "99.09% 精确",
+                kpis: [
+                    ["平均精确率", "99.09%", "good"],
+                    ["平均召回率", "92.42%", "good"],
+                    ["平均 F1", "95.61%", "good"],
+                    ["总文章数", "10", ""]
+                ]
+            },
+            {
+                id: "milik",
+                name: "马来 Milik 测试集",
+                source: "修正版评测报告",
+                file: "马来 milik文章提取评测报告_副本4.html",
+                desc: "马来站内容修正版评测，包含套装不拆配件、名称包含关系等规则修正说明。",
+                badge: "9/13 完美",
+                kpis: [
+                    ["平均精确率", "96%", "good"],
+                    ["平均召回率", "91%", "warn"],
+                    ["平均 F1", "92%", "good"],
+                    ["总文章数", "13", ""]
+                ]
+            }
+        ];
+
+        const datasetSelect = document.getElementById("datasetSelect");
+        const datasetButtons = document.getElementById("datasetButtons");
+        const reportName = document.getElementById("reportName");
+        const reportDesc = document.getElementById("reportDesc");
+        const reportBadge = document.getElementById("reportBadge");
+        const reportFrame = document.getElementById("reportFrame");
+        const openReport = document.getElementById("openReport");
+        const kpiGrid = document.getElementById("kpiGrid");
+
+        function encodePath(file) {
+            return file.split("/").map(encodeURIComponent).join("/");
+        }
+
+        function renderNav(activeId) {
+            datasetSelect.innerHTML = reports.map(report => (
+                `<option value="${report.id}">${report.name}</option>`
+            )).join("");
+            datasetButtons.innerHTML = reports.map(report => (
+                `<button class="dataset-button ${report.id === activeId ? "active" : ""}" type="button" data-report-id="${report.id}">
+                    <span class="dataset-name">${report.name}<span class="pill">${report.badge}</span></span>
+                    <span class="dataset-meta">${report.source}</span>
+                </button>`
+            )).join("");
+        }
+
+        function setReport(id, syncHash = true) {
+            const report = reports.find(item => item.id === id) || reports[0];
+            renderNav(report.id);
+            datasetSelect.value = report.id;
+            reportName.textContent = report.name;
+            reportDesc.textContent = report.desc;
+            reportBadge.textContent = report.badge;
+            const url = encodePath(report.file);
+            reportFrame.src = url;
+            openReport.href = url;
+            kpiGrid.innerHTML = report.kpis.map(([label, value, tone]) => (
+                `<div class="kpi ${tone}">
+                    <span>${label}</span>
+                    <strong>${value}</strong>
+                </div>`
+            )).join("");
+            document.title = `${report.name} | ProductDiscovery 评测后台`;
+            if (syncHash) {
+                history.replaceState(null, "", `#${report.id}`);
+            }
+        }
+
+        datasetSelect.addEventListener("change", event => setReport(event.target.value));
+        datasetButtons.addEventListener("click", event => {
+            const button = event.target.closest("[data-report-id]");
+            if (button) setReport(button.dataset.reportId);
+        });
+        window.addEventListener("hashchange", () => setReport(location.hash.slice(1), false));
+
+        setReport(location.hash.slice(1) || reports[0].id, false);
+    </script>
+</body>
+</html>
