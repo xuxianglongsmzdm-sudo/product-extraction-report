@@ -1,6 +1,6 @@
 # ProductDiscovery 商品提取评测后台
 
-老板入口：
+入口：
 
 https://xuxianglongsmzdm-sudo.github.io/product-extraction-report/
 
